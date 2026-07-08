@@ -16,41 +16,128 @@ It's a plain server-rendered app: one Node process, one SQLite file, no build st
 
 ## Requirements
 
-- Node.js 20 or newer
-- No external database or services — SQLite lives in a local file.
+- **Node.js 20 or newer** — the JavaScript runtime that runs the app (installation covered below).
+- That's it. There is no external database, no Docker, no build step — SQLite lives in a single local file, and all other dependencies are installed automatically by `npm install`.
 
 ## Quick start
 
+This guide assumes no prior experience — every command goes into a terminal, and each step says what it does. If you've done this kind of thing before, the short version is: install Node 20+, `git clone`, `npm install`, `cp .env.example .env` (set `SESSION_SECRET`), `npm run create-admin`, `npm start`.
+
+### Step 0 — Open a terminal
+
+- **macOS:** open **Terminal** (press `Cmd+Space`, type "Terminal", hit Enter).
+- **Windows:** open **PowerShell** (press the Windows key, type "PowerShell", hit Enter).
+- **Linux:** you know where your terminal is.
+
+Commands below are typed (or pasted) into that window and run by pressing Enter.
+
+### Step 1 — Install Node.js
+
+**macOS**
+
+Either download and run the macOS installer from [nodejs.org](https://nodejs.org) (choose the **LTS** version), or if you use [Homebrew](https://brew.sh):
+
 ```bash
-git clone <this-repo-url>
+brew install node
+```
+
+**Windows**
+
+Either download and run the Windows installer from [nodejs.org](https://nodejs.org) (choose the **LTS** version, accept the defaults), or install from PowerShell:
+
+```powershell
+winget install OpenJS.NodeJS.LTS
+```
+
+Close and reopen PowerShell afterward so it picks up the new command.
+
+**Linux (Debian/Ubuntu)**
+
+The version in the default `apt` repositories is often too old. Use NodeSource:
+
+```bash
+curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+sudo apt-get install -y nodejs
+```
+
+(Fedora/RHEL: same idea with `https://rpm.nodesource.com/setup_22.x` and `dnf install nodejs`. Or use [nvm](https://github.com/nvm-sh/nvm) on any distro.)
+
+**Verify it worked (all platforms):**
+
+```bash
+node --version
+```
+
+You should see `v20.x.x` or higher. If you see "command not found", the install didn't finish — reopen the terminal and try again.
+
+### Step 2 — Get the code
+
+If you have git:
+
+```bash
+git clone https://github.com/arsergi/open-rush.git
 cd open-rush
-npm install
-cp .env.example .env
 ```
 
-Generate a session secret and put it in `.env`:
+No git? On GitHub click the green **Code** button → **Download ZIP**, unzip it, then in your terminal `cd` into the unzipped folder (e.g. `cd Downloads/open-rush-main`).
+
+### Step 3 — Install the app's dependencies
 
 ```bash
-openssl rand -hex 32
+npm install
 ```
 
-Paste the output as `SESSION_SECRET=...` in `.env`.
+`npm` came with Node. This downloads everything the app needs into a `node_modules` folder — takes a minute the first time. Warnings are normal; errors are not.
 
-Create your first admin account:
+### Step 4 — Configure
+
+The app reads its settings from a file named `.env`. Start from the provided example:
+
+```bash
+cp .env.example .env        # macOS / Linux
+copy .env.example .env      # Windows PowerShell
+```
+
+Now generate a session secret — a long random string that keeps login cookies secure. This command prints one (works on every OS, since you already have Node):
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+Open `.env` in any text editor (Notepad, TextEdit, whatever) and paste the output after `SESSION_SECRET=`, so the line looks like:
+
+```
+SESSION_SECRET=4f8a1c...long-random-string...9b2e
+```
+
+Don't share this value or commit it anywhere.
+
+### Step 5 — Create your admin account
 
 ```bash
 npm run create-admin
 ```
 
-This prompts for an email, username, and password (hidden input) and creates an already-approved admin.
+It asks for an email, username, and password (the password won't show as you type — that's on purpose). This is the **only** way to create an admin; there's deliberately no way to do it through the website.
 
-Start the app:
+### Step 6 — Start it
 
 ```bash
 npm start
 ```
 
-Visit `http://localhost:3000`. Brothers use `/pnms`; the admin panel is at `/admin`.
+Leave that terminal window open (the app stops when you close it) and visit [http://localhost:3000](http://localhost:3000) in your browser. Log in with the admin account you just made — brothers use `/pnms`, and the admin panel is at `/admin`. To stop the app, press `Ctrl+C` in the terminal.
+
+Everyone else signs up at `/signup` and waits for you to approve them at `/admin/users`.
+
+### If something goes wrong
+
+- **`EADDRINUSE` / "port already in use"** — something else is on port 3000. Set `PORT=3001` (any free port) in `.env` and start again.
+- **"SESSION_SECRET is required"** — Step 4 wasn't finished; make sure `.env` exists and the `SESSION_SECRET=` line is filled in.
+- **`node: command not found` / very old version** — redo Step 1 and reopen the terminal.
+- **Errors during `npm install` mentioning "gyp" or compilers** — rare (the native modules ship prebuilt for common platforms); updating Node to the current LTS from [nodejs.org](https://nodejs.org) usually fixes it.
+
+Running this for your whole chapter on a real server? See [Deployment](#deployment) below.
 
 ## Usage overview
 
