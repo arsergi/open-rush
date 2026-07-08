@@ -11,7 +11,7 @@
     "create-admin": "node scripts/admin.js create"
   },
   "dependencies": {
-    "bcrypt": "^5.1.1",
+    "bcrypt": "^6.0.0",
     "better-sqlite3": "^11.3.0",
     "better-sqlite3-session-store": "^0.1.0",
     "dotenv": "^16.4.5",
