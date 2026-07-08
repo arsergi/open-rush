@@ -147,7 +147,7 @@ input[type="submit"]:hover {
 
 .admin-note {
   border-left: 3px solid var(--admin-border);
-  padding-left: 0.75rem;
+  padding-left: 1.25rem;
 }
 
 .error {
