@@ -1,0 +1,61 @@
+<%- include('../partials/head', { title: mode === 'new' ? 'Add PNM' : 'Edit PNM' }) %>
+<%- include('../partials/nav') %>
+<main class="container">
+  <h1><%= mode === 'new' ? 'Add a PNM' : 'Edit PNM' %></h1>
+
+  <% if (error) { %><p class="error"><%= error %></p><% } %>
+
+  <form method="POST" action="<%= mode === 'new' ? '/pnms' : '/pnms/' + pnm.id + '/edit' %>" enctype="multipart/form-data">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+    <label>Name
+      <% if (mode === 'new' || isAdmin) { %>
+        <input type="text" name="name" value="<%= values.name %>" maxlength="100" required>
+      <% } else { %>
+        <span><%= pnm.name %></span>
+      <% } %>
+    </label>
+
+    <label>Phone
+      <% if (mode === 'edit' && !isAdmin && pnm.phone) { %>
+        <span><%= pnm.phone %></span>
+      <% } else { %>
+        <input type="tel" name="phone" value="<%= values.phone %>" maxlength="20">
+      <% } %>
+    </label>
+
+    <label>Instagram
+      <% if (mode === 'edit' && !isAdmin && pnm.instagram) { %>
+        <span>@<%= pnm.instagram %></span>
+      <% } else { %>
+        <input type="text" name="instagram" value="<%= values.instagram %>" maxlength="30" placeholder="handle (without @)">
+      <% } %>
+    </label>
+
+    <label>Hometown
+      <% if (mode === 'edit' && !isAdmin && pnm.hometown) { %>
+        <span><%= pnm.hometown %></span>
+      <% } else { %>
+        <input type="text" name="hometown" value="<%= values.hometown %>" maxlength="100">
+      <% } %>
+    </label>
+
+    <% if (mode === 'edit' && pnm.photo && isAdmin) { %>
+      <img src="/uploads/<%= pnm.photo %>" class="photo-thumb-form" alt="">
+      <label class="checkbox-row">
+        <input type="checkbox" name="remove_photo" value="1"> Remove current photo
+      </label>
+    <% } %>
+
+    <label>Photo
+      <% if (mode === 'edit' && pnm.photo && !isAdmin) { %>
+        <img src="/uploads/<%= pnm.photo %>" class="photo-thumb-form" alt="">
+      <% } else { %>
+        <input type="file" name="photo" accept="image/jpeg,image/png,image/webp">
+      <% } %>
+    </label>
+
+    <button type="submit"><%= mode === 'new' ? 'Submit' : 'Save' %></button>
+  </form>
+</main>
+<%- include('../partials/foot') %>

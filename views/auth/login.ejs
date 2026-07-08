@@ -1,0 +1,19 @@
+<%- include('../partials/head', { title: 'Log in' }) %>
+<%- include('../partials/nav') %>
+<main class="container">
+  <h1>Log in</h1>
+  <% if (notice) { %><p class="notice"><%= notice %></p><% } %>
+  <% if (error) { %><p class="error"><%= error %></p><% } %>
+  <form method="POST" action="/login">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <label>Username or email
+      <input type="text" name="username" value="<%= values.username %>" required autofocus>
+    </label>
+    <label>Password
+      <input type="password" name="password" required>
+    </label>
+    <button type="submit">Log in</button>
+  </form>
+  <p><a href="/signup">Need an account? Sign up</a></p>
+</main>
+<%- include('../partials/foot') %>

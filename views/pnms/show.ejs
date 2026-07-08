@@ -1,0 +1,127 @@
+<%- include('../partials/head', { title: pnm.name }) %>
+<%- include('../partials/nav') %>
+<main class="container">
+  <h1>
+    <%= pnm.name %>
+    <% if (pnm.status !== 'active') { %><span class="badge">PENDING</span><% } %>
+  </h1>
+
+  <% if (pnm.photo) { %>
+    <img src="/uploads/<%= pnm.photo %>" class="photo-detail" alt="">
+  <% } else { %>
+    <div class="photo-placeholder-detail"></div>
+  <% } %>
+
+  <p><span class="badge decision-<%= pnm.decision %>"><%= decisionLabel(pnm.decision) %></span></p>
+
+  <% if (isAdmin) { %>
+    <form method="POST" action="/admin/pnms/<%= pnm.id %>/decision" class="inline-form decision-form">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <button type="submit" name="decision" value="bid" class="vote-btn <%= pnm.decision === 'bid' ? 'vote-active' : '' %>">Bid</button>
+      <button type="submit" name="decision" value="no_bid" class="vote-btn <%= pnm.decision === 'no_bid' ? 'vote-active' : '' %>">No bid</button>
+      <button type="submit" name="decision" value="undecided" class="vote-btn <%= pnm.decision === 'undecided' ? 'vote-active' : '' %>">Undecided</button>
+    </form>
+  <% } %>
+
+  <dl class="pnm-fields">
+    <dt>Hometown</dt>
+    <dd><%= pnm.hometown || '—' %></dd>
+
+    <dt>Phone</dt>
+    <dd><%= pnm.phone || '—' %></dd>
+
+    <dt>Instagram</dt>
+    <dd>
+      <% if (pnm.instagram) { %>
+        <a href="https://instagram.com/<%= pnm.instagram %>" target="_blank" rel="noopener noreferrer">@<%= pnm.instagram %></a>
+      <% } else { %>&mdash;<% } %>
+    </dd>
+
+    <dt>Submitted by</dt>
+    <dd><%= pnm.submitted_by_username || 'Unknown' %></dd>
+  </dl>
+
+  <p><a href="/pnms/<%= pnm.id %>/edit">Edit</a></p>
+
+  <% if (isAdmin) { %>
+    <form method="POST" action="/admin/pnms/<%= pnm.id %>/delete" class="inline-form">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <button type="submit" class="link-button delete-pnm-btn">Delete PNM</button>
+    </form>
+  <% } %>
+
+  <section class="vote-section">
+    <h2>Votes</h2>
+    <p><%= yesCount %> yes / <%= noCount %> no</p>
+
+    <% if (pnm.status !== 'active') { %>
+      <p class="notice">Voting isn't open until this PNM is approved.</p>
+    <% } else if (votingFrozen) { %>
+      <p class="notice">Voting is frozen.</p>
+    <% } else { %>
+      <form method="POST" action="/pnms/<%= pnm.id %>/vote" class="inline-form">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <input type="hidden" name="value" value="yes">
+        <button type="submit" class="vote-btn <%= myVote === 1 ? 'vote-active' : '' %>">Yes</button>
+      </form>
+      <form method="POST" action="/pnms/<%= pnm.id %>/vote" class="inline-form">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <input type="hidden" name="value" value="no">
+        <button type="submit" class="vote-btn <%= myVote === 0 ? 'vote-active' : '' %>">No</button>
+      </form>
+    <% } %>
+
+    <% if (showVoters) { %>
+      <p><strong>Yes:</strong> <%= yesVoters.length ? yesVoters.join(', ') : '—' %></p>
+      <p><strong>No:</strong> <%= noVoters.length ? noVoters.join(', ') : '—' %></p>
+    <% } %>
+  </section>
+
+  <section class="notes-section">
+    <h2>Notes</h2>
+
+    <% if (notes.length === 0) { %>
+      <p class="muted">No notes yet.</p>
+    <% } %>
+
+    <% notes.forEach(function(note) { %>
+      <div class="note <%= note.author_role === 'admin' ? 'admin-note' : '' %>" id="note-<%= note.id %>">
+        <div class="note-meta">
+          <strong><%= note.username %></strong>
+          <% if (note.author_role === 'admin') { %><span class="badge admin-badge">ADMIN</span><% } %>
+          <span class="muted"><%= note.created_at %></span>
+        </div>
+
+        <p class="note-body"><%= note.body %></p>
+
+        <div class="reactions-row">
+          <% note.reactions.forEach(function(r) { %>
+            <form method="POST" action="/notes/<%= note.id %>/react" class="inline-form reaction-form">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <input type="hidden" name="emoji" value="<%= r.emoji %>">
+              <button type="submit" class="reaction-btn <%= r.mine ? 'reaction-active' : '' %>"><%= r.emoji %><% if (r.count > 0) { %> <%= r.count %><% } %></button>
+            </form>
+          <% }); %>
+        </div>
+
+        <% if (isAdmin || note.user_id === currentUser.id) { %>
+          <form method="POST" action="/notes/<%= note.id %>/delete" class="inline-form">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button type="submit" class="link-button note-delete">Delete</button>
+          </form>
+        <% } %>
+      </div>
+    <% }); %>
+
+    <form method="POST" action="/pnms/<%= pnm.id %>/notes" class="note-form">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <% if (noteError) { %><p class="error"><%= noteError %></p><% } %>
+      <label>
+        Add a note
+        <textarea name="body" rows="3" maxlength="2000"><%= noteBody %></textarea>
+      </label>
+      <button type="submit">Post note</button>
+    </form>
+  </section>
+</main>
+<%- include('../partials/foot') %>

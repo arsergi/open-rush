@@ -1,0 +1,58 @@
+<%- include('../partials/head', { title: 'PNMs' }) %>
+<%- include('../partials/nav') %>
+<main class="container">
+  <h1>PNMs</h1>
+
+  <% if (notice) { %><p class="notice"><%= notice %></p><% } %>
+
+  <p><a href="/pnms/new">+ Add a PNM</a></p>
+
+  <form method="GET" action="/pnms" class="filter-bar">
+    <input type="text" name="q" value="<%= q %>" placeholder="Search name or hometown">
+    <select name="decision">
+      <option value="">Any decision</option>
+      <option value="undecided" <%= decisionFilter === 'undecided' ? 'selected' : '' %>>Undecided</option>
+      <option value="bid" <%= decisionFilter === 'bid' ? 'selected' : '' %>>Bid</option>
+      <option value="no_bid" <%= decisionFilter === 'no_bid' ? 'selected' : '' %>>No bid</option>
+    </select>
+    <select name="voted">
+      <option value="">Any vote status</option>
+      <option value="yes" <%= votedFilter === 'yes' ? 'selected' : '' %>>I voted yes</option>
+      <option value="no" <%= votedFilter === 'no' ? 'selected' : '' %>>I voted no</option>
+      <option value="none" <%= votedFilter === 'none' ? 'selected' : '' %>>I haven't voted</option>
+    </select>
+    <button type="submit">Filter</button>
+  </form>
+
+  <% if (pnms.length === 0) { %>
+    <p class="notice">No PNMs match.</p>
+  <% } else { %>
+    <table class="pnm-list">
+      <tbody>
+        <% pnms.forEach(function(p) { %>
+          <tr>
+            <td>
+              <% if (p.photo) { %>
+                <img src="/uploads/<%= p.photo %>" class="photo-thumb" alt="">
+              <% } else { %>
+                <span class="photo-placeholder"></span>
+              <% } %>
+            </td>
+            <td>
+              <a href="/pnms/<%= p.id %>"><%= p.name %></a>
+              <% if (p.status !== 'active') { %><span class="badge">PENDING</span><% } %>
+              <div class="muted"><%= p.hometown || '' %></div>
+            </td>
+            <td><span class="badge decision-<%= p.decision %>"><%= decisionLabel(p.decision) %></span></td>
+            <td>
+              <%= p.yes_count %> yes / <%= p.no_count %> no
+              <% if (p.my_vote === 1) { %><div class="badge">your vote: yes</div><% } %>
+              <% if (p.my_vote === 0) { %><div class="badge">your vote: no</div><% } %>
+            </td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  <% } %>
+</main>
+<%- include('../partials/foot') %>

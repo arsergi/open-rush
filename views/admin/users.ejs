@@ -1,0 +1,75 @@
+<%- include('../partials/head', { title: 'Manage users' }) %>
+<%- include('../partials/nav') %>
+<main class="container">
+  <h1>Users</h1>
+  <p><a href="/admin">&larr; Back to admin</a></p>
+
+  <h2>Pending approval</h2>
+  <% if (pending.length === 0) { %>
+    <p class="muted">No pending users.</p>
+  <% } else { %>
+    <table class="pnm-list">
+      <tbody>
+        <% pending.forEach(function(u) { %>
+          <tr>
+            <td><%= u.username %></td>
+            <td class="muted"><%= u.email %></td>
+            <td class="muted"><%= u.created_at %></td>
+            <td>
+              <form method="POST" action="/admin/users/<%= u.id %>/approve" class="inline-form">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <button type="submit">Approve</button>
+              </form>
+              <form method="POST" action="/admin/users/<%= u.id %>/reject" class="inline-form">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <button type="submit" class="link-button">Reject</button>
+              </form>
+            </td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  <% } %>
+
+  <h2>All users</h2>
+  <table class="pnm-list">
+    <thead>
+      <tr>
+        <th>Username</th>
+        <th>Email</th>
+        <th>Role</th>
+        <th>Status</th>
+        <th>Joined</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% all.forEach(function(u) { %>
+        <tr>
+          <td><%= u.username %></td>
+          <td class="muted"><%= u.email %></td>
+          <td><%= u.role %></td>
+          <td><span class="badge"><%= u.status %></span></td>
+          <td class="muted"><%= u.created_at %></td>
+          <td>
+            <% if (u.role !== 'admin' && u.id !== currentUserId) { %>
+              <% if (u.status !== 'approved') { %>
+                <form method="POST" action="/admin/users/<%= u.id %>/approve" class="inline-form">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                  <button type="submit" class="link-button">Approve</button>
+                </form>
+              <% } %>
+              <% if (u.status !== 'rejected') { %>
+                <form method="POST" action="/admin/users/<%= u.id %>/reject" class="inline-form">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                  <button type="submit" class="link-button">Reject</button>
+                </form>
+              <% } %>
+            <% } %>
+          </td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+</main>
+<%- include('../partials/foot') %>

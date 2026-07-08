@@ -1,0 +1,22 @@
+<%- include('../partials/head', { title: 'Admin' }) %>
+<%- include('../partials/nav') %>
+<main class="container">
+  <h1>Admin</h1>
+
+  <% if (notice) { %><p class="notice"><%= notice %></p><% } %>
+
+  <ul>
+    <li><a href="/admin/users">Users</a> — <%= pendingUsers %> pending approval</li>
+    <li><a href="/admin/pnms">PNM queue</a> — <%= pendingPnms %> pending review</li>
+    <li><a href="/admin/settings">Settings</a></li>
+    <li><a href="/admin/export.csv">Export CSV</a></li>
+  </ul>
+
+  <dl class="pnm-fields">
+    <dt>Active PNMs</dt>
+    <dd><%= activePnms %></dd>
+    <dt>Approved brothers</dt>
+    <dd><%= approvedBrothers %></dd>
+  </dl>
+</main>
+<%- include('../partials/foot') %>

@@ -1,0 +1,12 @@
+<%- include('../partials/head', { title: 'Pending approval' }) %>
+<%- include('../partials/nav') %>
+<main class="container">
+  <% if (status === 'rejected') { %>
+    <h1>Account rejected</h1>
+    <p>An admin has rejected your account. Contact the chapter for details.</p>
+  <% } else { %>
+    <h1>Awaiting approval</h1>
+    <p>Your account is pending approval by an admin. Check back soon.</p>
+  <% } %>
+</main>
+<%- include('../partials/foot') %>

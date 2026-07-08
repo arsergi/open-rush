@@ -1,0 +1,43 @@
+<%- include('../partials/head', { title: 'PNM queue' }) %>
+<%- include('../partials/nav') %>
+<main class="container">
+  <h1>Pending PNMs</h1>
+  <p><a href="/admin">&larr; Back to admin</a></p>
+
+  <% if (pending.length === 0) { %>
+    <p class="muted">No PNMs awaiting review.</p>
+  <% } else { %>
+    <table class="pnm-list">
+      <tbody>
+        <% pending.forEach(function(p) { %>
+          <tr>
+            <td>
+              <% if (p.photo) { %>
+                <img src="/uploads/<%= p.photo %>" class="photo-thumb" alt="">
+              <% } else { %>
+                <span class="photo-placeholder"></span>
+              <% } %>
+            </td>
+            <td>
+              <a href="/pnms/<%= p.id %>"><%= p.name %></a>
+              <span class="badge decision-<%= p.decision %>"><%= decisionLabel(p.decision) %></span>
+              <div class="muted"><%= p.hometown || '' %></div>
+              <div class="muted">Submitted by <%= p.submitted_by_username || 'Unknown' %></div>
+            </td>
+            <td>
+              <form method="POST" action="/admin/pnms/<%= p.id %>/approve" class="inline-form">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <button type="submit">Approve</button>
+              </form>
+              <form method="POST" action="/admin/pnms/<%= p.id %>/reject" class="inline-form">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <button type="submit" class="link-button">Reject</button>
+              </form>
+            </td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  <% } %>
+</main>
+<%- include('../partials/foot') %>

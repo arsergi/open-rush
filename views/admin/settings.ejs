@@ -1,0 +1,52 @@
+<%- include('../partials/head', { title: 'Settings' }) %>
+<%- include('../partials/nav') %>
+<main class="container">
+  <h1>Settings</h1>
+  <p><a href="/admin">&larr; Back to admin</a></p>
+
+  <% if (notice) { %><p class="notice"><%= notice %></p><% } %>
+  <% if (settingsError) { %><p class="error"><%= settingsError %></p><% } %>
+
+  <form method="POST" action="/admin/settings">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+    <label class="checkbox-row">
+      <input type="radio" name="vote_visibility" value="anonymous" <%= voteVisibility === 'anonymous' ? 'checked' : '' %>>
+      Anonymous voting (admin still sees voter names)
+    </label>
+    <label class="checkbox-row">
+      <input type="radio" name="vote_visibility" value="public" <%= voteVisibility === 'public' ? 'checked' : '' %>>
+      Public voting (everyone sees voter names)
+    </label>
+
+    <label class="checkbox-row">
+      <input type="checkbox" name="voting_frozen" value="1" <%= votingFrozen ? 'checked' : '' %>>
+      Freeze voting
+    </label>
+
+    <label class="checkbox-row">
+      <input type="checkbox" name="signups_closed" value="1" <%= signupsClosed ? 'checked' : '' %>>
+      Close signups
+    </label>
+
+    <button type="submit">Save settings</button>
+  </form>
+
+  <div class="danger-zone">
+    <h2>Danger zone</h2>
+    <% if (resetError) { %><p class="error"><%= resetError %></p><% } %>
+    <p class="muted">
+      This permanently deletes all PNMs, votes, notes, and reactions (and their
+      photos). User accounts are kept. Type <strong>RESET RUSH</strong> below to confirm.
+    </p>
+    <form method="POST" action="/admin/reset">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <label>
+        Confirmation
+        <input type="text" name="confirm" placeholder="RESET RUSH">
+      </label>
+      <button type="submit">Reset rush</button>
+    </form>
+  </div>
+</main>
+<%- include('../partials/foot') %>
