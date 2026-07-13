@@ -1,6 +1,7 @@
 const express = require('express');
 const { db } = require('../db');
 const { EMOJI_SET } = require('../lib/reactions');
+const validate = require('../lib/validate');
 
 const router = express.Router();
 
@@ -76,6 +77,28 @@ router.post('/:id/react', (req, res) => {
   }
 
   res.redirect(`/pnms/${note.pnm_id}#note-${id}`);
+});
+
+// ---------------------------------------------------------------------------
+// POST /notes/:id/reply — reply to a top-level note (1-2000 chars, same
+// validation as a note). Single-level only: replying to a reply is rejected.
+// ---------------------------------------------------------------------------
+router.post('/:id/reply', (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (!Number.isInteger(id)) return res.status(404).send('Not found');
+
+  const parent = getNoteWithPnmStmt.get(id);
+  if (!parent || !canSeeNotePnm(req, parent)) return res.status(404).send('Not found');
+  if (parent.parent_id !== null) return res.status(400).send('Cannot reply to a reply.');
+
+  const result = validate.note((req.body && req.body.body) || '');
+  if (!result.ok) return res.status(400).send(result.error);
+
+  const info = db
+    .prepare('INSERT INTO notes (pnm_id, user_id, parent_id, body) VALUES (?, ?, ?, ?)')
+    .run(parent.pnm_id, req.user.id, id, result.value);
+
+  res.redirect(`/pnms/${parent.pnm_id}#note-${info.lastInsertRowid}`);
 });
 
 module.exports = router;

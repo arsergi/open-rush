@@ -344,6 +344,16 @@ input[type="submit"]:hover {
   max-width: 500px;
 }
 
+.replies {
+  margin-left: 1.5rem;
+}
+
+.reply-form {
+  margin: 0.5rem 0 0.75rem 1.5rem;
+  display: flex;
+  gap: 0.5rem;
+}
+
 /* Admin */
 
 .delete-pnm-btn {

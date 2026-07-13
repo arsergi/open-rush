@@ -374,7 +374,19 @@ function loadNotes(id, userId) {
     )
     .all(id);
   attachReactions(db, notes, userId);
-  return notes;
+
+  const repliesByParent = new Map();
+  for (const n of notes) {
+    if (n.parent_id) {
+      if (!repliesByParent.has(n.parent_id)) repliesByParent.set(n.parent_id, []);
+      repliesByParent.get(n.parent_id).push(n);
+    }
+  }
+  const topLevel = notes.filter((n) => !n.parent_id);
+  for (const n of topLevel) {
+    n.replies = repliesByParent.get(n.id) || [];
+  }
+  return topLevel;
 }
 
 function buildShowLocals(req, pnm, extra) {

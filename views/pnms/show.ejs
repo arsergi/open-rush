@@ -85,32 +85,21 @@
     <% } %>
 
     <% notes.forEach(function(note) { %>
-      <div class="note <%= note.author_role === 'admin' ? 'admin-note' : '' %>" id="note-<%= note.id %>">
-        <div class="note-meta">
-          <strong><%= note.username %></strong>
-          <% if (note.author_role === 'admin') { %><span class="badge admin-badge">ADMIN</span><% } %>
-          <span class="muted"><%= note.created_at %></span>
-        </div>
+      <%- include('../partials/note', { note: note }) %>
 
-        <p class="note-body"><%= note.body %></p>
-
-        <div class="reactions-row">
-          <% note.reactions.forEach(function(r) { %>
-            <form method="POST" action="/notes/<%= note.id %>/react" class="inline-form reaction-form">
-              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-              <input type="hidden" name="emoji" value="<%= r.emoji %>">
-              <button type="submit" class="reaction-btn <%= r.mine ? 'reaction-active' : '' %>"><%= r.emoji %><% if (r.count > 0) { %> <%= r.count %><% } %></button>
-            </form>
+      <% if (note.replies.length) { %>
+        <div class="replies">
+          <% note.replies.forEach(function(reply) { %>
+            <%- include('../partials/note', { note: reply }) %>
           <% }); %>
         </div>
+      <% } %>
 
-        <% if (isAdmin || note.user_id === currentUser.id) { %>
-          <form method="POST" action="/notes/<%= note.id %>/delete" class="inline-form">
-            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-            <button type="submit" class="link-button note-delete">Delete</button>
-          </form>
-        <% } %>
-      </div>
+      <form method="POST" action="/notes/<%= note.id %>/reply" class="inline-form reply-form">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <input type="text" name="body" maxlength="2000" placeholder="Reply..." required>
+        <button type="submit">Reply</button>
+      </form>
     <% }); %>
 
     <form method="POST" action="/pnms/<%= pnm.id %>/notes" class="note-form">

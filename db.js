@@ -56,6 +56,7 @@ CREATE TABLE IF NOT EXISTS notes (
   id         INTEGER PRIMARY KEY,
   pnm_id     INTEGER NOT NULL REFERENCES pnms(id) ON DELETE CASCADE,
   user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  parent_id  INTEGER REFERENCES notes(id) ON DELETE CASCADE,
   body       TEXT NOT NULL,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
@@ -77,6 +78,15 @@ CREATE INDEX IF NOT EXISTS idx_votes_pnm ON votes(pnm_id);
 CREATE INDEX IF NOT EXISTS idx_notes_pnm ON notes(pnm_id);
 CREATE INDEX IF NOT EXISTS idx_reactions_note ON reactions(note_id);
 `);
+
+// Migration guard: CREATE TABLE IF NOT EXISTS above won't add parent_id to
+// an existing notes table on an already-deployed DB, so add it here if
+// missing. Runs unconditionally on startup, same as the indexes below.
+const noteCols = db.prepare('PRAGMA table_info(notes)').all();
+if (!noteCols.some((c) => c.name === 'parent_id')) {
+  db.exec('ALTER TABLE notes ADD COLUMN parent_id INTEGER REFERENCES notes(id) ON DELETE CASCADE');
+}
+db.exec('CREATE INDEX IF NOT EXISTS idx_notes_parent ON notes(parent_id)');
 
 const seedSetting = db.prepare(
   'INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)'

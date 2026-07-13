@@ -379,6 +379,43 @@ test('only the note author or an admin may delete a note', async () => {
 });
 
 // ---------------------------------------------------------------------------
+// j2. note replies: single-level threading only
+// ---------------------------------------------------------------------------
+test('a brother can reply to their own note, but replying to a reply is rejected', async () => {
+  const pnmId = insertActivePnm('Reply Target PNM', adminId, '5554445556');
+
+  let csrf = await getCsrfFor(brotherAgent, `/pnms/${pnmId}`);
+  await brotherAgent.post(`/pnms/${pnmId}/notes`).type('form').send({ _csrf: csrf, body: 'A top-level note' });
+
+  const note = db.prepare('SELECT * FROM notes WHERE pnm_id = ?').get(pnmId);
+  assert.ok(note);
+
+  // Same user replies to their own note -> 302, row inserted with parent_id set
+  csrf = await getCsrfFor(brotherAgent, `/pnms/${pnmId}`);
+  let res = await brotherAgent
+    .post(`/notes/${note.id}/reply`)
+    .type('form')
+    .send({ _csrf: csrf, body: 'Replying to my own note' });
+  assert.equal(res.status, 302);
+
+  const reply = db.prepare('SELECT * FROM notes WHERE parent_id = ?').get(note.id);
+  assert.ok(reply, 'reply should have been inserted');
+  assert.equal(reply.parent_id, note.id);
+  assert.equal(reply.user_id, brotherId);
+
+  // Replying to the reply is rejected -> 400, no such row inserted
+  csrf = await getCsrfFor(brotherAgent, `/pnms/${pnmId}`);
+  res = await brotherAgent
+    .post(`/notes/${reply.id}/reply`)
+    .type('form')
+    .send({ _csrf: csrf, body: 'Trying to reply to a reply' });
+  assert.equal(res.status, 400);
+
+  const nestedReply = db.prepare('SELECT * FROM notes WHERE parent_id = ?').get(reply.id);
+  assert.equal(nestedReply, undefined, 'no reply-to-a-reply row should have been inserted');
+});
+
+// ---------------------------------------------------------------------------
 // k. reaction validation + toggle
 // ---------------------------------------------------------------------------
 test('invalid reaction emoji rejected with 400; valid emoji toggles on then off', async () => {

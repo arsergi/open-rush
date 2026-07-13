@@ -147,7 +147,7 @@ Running this for your whole chapter on a real server? See [Deployment](#deployme
 
 **Voting.** Each brother can cast one yes/no vote per PNM (voting again just changes your vote). Under **Settings**, the admin chooses whether voter names are public to all brothers or anonymous (admins can always see who voted which way); voting can also be frozen chapter-wide.
 
-**Notes and reactions.** Any approved brother can leave a note on a PNM. Notes from admins are visually flagged based on the author's *current* role. A note can be deleted by its author or by an admin. Reactions are a fixed set of six emoji, toggled on/off per user per note — no JavaScript required.
+**Notes and reactions.** Any approved brother can leave a note on a PNM. Notes from admins are visually flagged based on the author's *current* role. A note can be deleted by its author or by an admin. Reactions are a fixed set of six emoji, toggled on/off per user per note — no JavaScript required. Notes can be replied to (including your own), with the same reactions and delete rules; replies can't themselves be replied to.
 
 **Bid decisions.** From a PNM's page, an admin sets a `BID` / `NO BID` / `UNDECIDED` badge. This is a label only — it never locks voting.
 
